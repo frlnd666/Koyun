@@ -1,6 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
+// Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyDOUb7G6NBe2IKTyLYKFYyf7e0uiNoDoBs",
     authDomain: "koyun-id.firebaseapp.com",
@@ -10,16 +11,12 @@ const firebaseConfig = {
     appId: "1:672101013741:web:64b367d77ec8df8ecf14e4"
 };
 
-// Cloudinary config (optional - untuk production)
-const cloudinaryConfig = {
-    cloudName: "promohub",
-    uploadPreset: "promohub"
-};
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// DOM Elements
+console.log('🔥 Firebase initialized');
+
+// DOM Elements - Main
 const phoneModal = document.getElementById('phoneModal');
 const phoneForm = document.getElementById('phoneForm');
 const phoneInput = document.getElementById('phoneInput');
@@ -28,6 +25,8 @@ const menuContainer = document.getElementById('menuContainer');
 const menuGrid = document.getElementById('menuGrid');
 const categoriesDiv = document.getElementById('categories');
 const tableInfo = document.getElementById('tableInfo');
+
+// DOM Elements - Cart
 const cartFloat = document.getElementById('cartFloat');
 const viewCartBtn = document.getElementById('viewCartBtn');
 const cartModal = document.getElementById('cartModal');
@@ -38,7 +37,7 @@ const checkoutBtn = document.getElementById('checkoutBtn');
 const paymentMethod = document.getElementById('paymentMethod');
 const closeCartModal = document.getElementById('closeCartModal');
 
-// Payment Modal Elements
+// DOM Elements - Payment Modal
 const paymentModal = document.getElementById('paymentModal');
 const closePaymentModal = document.getElementById('closePaymentModal');
 const paymentProof = document.getElementById('paymentProof');
@@ -48,6 +47,10 @@ const confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
 const qrisInfo = document.getElementById('qrisInfo');
 const transferInfo = document.getElementById('transferInfo');
 const totalPayment = document.getElementById('totalPayment');
+
+console.log('✅ DOM elements loaded');
+console.log('Payment Modal exists?', paymentModal !== null);
+console.log('Payment Proof input exists?', paymentProof !== null);
 
 // State
 let tableNumber = null;
@@ -59,7 +62,7 @@ let selectedPaymentMethod = 'cash';
 let paymentProofFile = null;
 let paymentProofUrl = '';
 
-// Get table number from URL
+// Get table from URL
 function getTableFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('table');
@@ -69,12 +72,18 @@ function getTableFromURL() {
 tableNumber = getTableFromURL();
 
 if (!tableNumber) {
-    // Show landing page instead of error
-    document.getElementById('landingPage').style.display = 'flex';
-    document.getElementById('phoneModal').style.display = 'none';
-    document.getElementById('menuContainer').style.display = 'none';
+    const landingPage = document.getElementById('landingPage');
+    if (landingPage) {
+        landingPage.style.display = 'flex';
+    }
+    if (phoneModal) phoneModal.style.display = 'none';
+    if (menuContainer) menuContainer.style.display = 'none';
 } else {
-    document.getElementById('landingPage').style.display = 'none';
+    const landingPage = document.getElementById('landingPage');
+    if (landingPage) {
+        landingPage.style.display = 'none';
+    }
+    
     tableDisplay.textContent = tableNumber;
     
     const savedPhone = sessionStorage.getItem(`phone_table_${tableNumber}`);
@@ -86,6 +95,7 @@ if (!tableNumber) {
         loadProducts();
     } else {
         phoneModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
     }
 }
 
@@ -108,22 +118,20 @@ phoneForm.addEventListener('submit', (e) => {
     loadProducts();
 });
 
-// Load products from Firestore
+// Load products
 async function loadProducts() {
     try {
         const q = query(collection(db, 'products'), where('active', '==', true));
         const snapshot = await getDocs(q);
         products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
+        console.log('📦 Products loaded:', products.length);
+        
         if (products.length === 0) {
             menuGrid.innerHTML = `
                 <div style="grid-column:1/-1; text-align:center; padding:60px 20px;">
-                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" stroke-width="1.5" style="margin-bottom:20px;">
-                        <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-                        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-                    </svg>
                     <h3 style="color:var(--text-medium);">Menu Belum Tersedia</h3>
-                    <p style="color:var(--text-light); margin-top:8px;">Silakan hubungi kasir untuk informasi menu</p>
+                    <p style="color:var(--text-light);">Silakan hubungi kasir</p>
                 </div>
             `;
             return;
@@ -134,7 +142,7 @@ async function loadProducts() {
         
     } catch (error) {
         console.error('Error loading products:', error);
-        menuGrid.innerHTML = '<p style="padding:40px; text-align:center; color:var(--danger);">Gagal memuat menu. Silakan refresh halaman.</p>';
+        menuGrid.innerHTML = '<p style="padding:40px; text-align:center; color:var(--danger);">Gagal memuat menu</p>';
     }
 }
 
@@ -188,7 +196,7 @@ function renderProducts() {
             </div>
             <div class="menu-info">
                 <h3 class="menu-name">${product.name}</h3>
-                <p class="menu-desc">${product.description || 'Minuman/makanan premium KoYun Coffee'}</p>
+                <p class="menu-desc">${product.description || 'Premium quality'}</p>
                 <div class="menu-footer">
                     <span class="menu-price">Rp ${product.price.toLocaleString('id-ID')}</span>
                     <button class="add-to-cart-btn" data-id="${product.id}">
@@ -224,7 +232,6 @@ function addToCart(productId) {
     
     updateCart();
     
-    // Visual feedback
     const btn = document.querySelector(`[data-id="${productId}"]`);
     const originalHTML = btn.innerHTML;
     btn.innerHTML = '<span>✓ Ditambahkan!</span>';
@@ -236,7 +243,7 @@ function addToCart(productId) {
     }, 1000);
 }
 
-// Update cart UI
+// Update cart
 function updateCart() {
     const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
     cartCount.textContent = itemCount;
@@ -255,7 +262,7 @@ viewCartBtn.addEventListener('click', () => {
     document.body.style.overflow = 'hidden';
 });
 
-// Close cart modal
+// Close cart
 closeCartModal.addEventListener('click', () => {
     cartModal.classList.remove('active');
     document.body.style.overflow = '';
@@ -273,12 +280,7 @@ function renderCartItems() {
     if (cart.length === 0) {
         cartItems.innerHTML = `
             <div style="text-align:center; padding:60px 20px;">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" stroke-width="1.5" style="margin-bottom:20px;">
-                    <circle cx="9" cy="21" r="1"></circle>
-                    <circle cx="20" cy="21" r="1"></circle>
-                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                </svg>
-                <p style="color:var(--text-medium); font-size:1.1rem;">Keranjang masih kosong</p>
+                <p style="color:var(--text-medium);">Keranjang masih kosong</p>
             </div>
         `;
         return;
@@ -290,8 +292,7 @@ function renderCartItems() {
     cartItems.innerHTML = cart.map(item => `
         <div class="cart-item">
             <img src="${item.imageUrl || 'https://via.placeholder.com/80/6F4E37/FFFFFF?text=' + encodeURIComponent(item.name)}" 
-                 alt="${item.name}"
-                 onerror="this.src='https://via.placeholder.com/80/6F4E37/FFFFFF?text=KoYun'">
+                 alt="${item.name}">
             <div class="cart-item-info">
                 <h4>${item.name}</h4>
                 <p class="cart-item-price">Rp ${item.price.toLocaleString('id-ID')}</p>
@@ -335,22 +336,25 @@ window.removeFromCart = function(productId) {
 // Payment method change
 paymentMethod.addEventListener('change', (e) => {
     selectedPaymentMethod = e.target.value;
+    console.log('💳 Payment method changed:', selectedPaymentMethod);
 });
 
-// Checkout button - cek payment method
+// Checkout button
 checkoutBtn.addEventListener('click', async () => {
     if (cart.length === 0) {
         alert('Keranjang kosong');
         return;
     }
     
+    console.log('🛒 Checkout clicked. Method:', selectedPaymentMethod);
+    
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
-    // Jika CASH, langsung proses order
     if (selectedPaymentMethod === 'cash') {
+        console.log('💵 Processing cash order...');
         await processOrder(total, null);
     } else {
-        // Jika QRIS/Transfer, minta upload bukti
+        console.log('💳 Opening payment modal...');
         cartModal.classList.remove('active');
         showPaymentModal(total);
     }
@@ -360,7 +364,6 @@ checkoutBtn.addEventListener('click', async () => {
 function showPaymentModal(total) {
     totalPayment.textContent = `Rp ${total.toLocaleString('id-ID')}`;
     
-    // Show relevant payment info
     if (selectedPaymentMethod === 'qris') {
         qrisInfo.style.display = 'block';
         transferInfo.style.display = 'none';
@@ -371,6 +374,8 @@ function showPaymentModal(total) {
     
     paymentModal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    
+    console.log('✅ Payment modal opened');
 }
 
 // Upload proof handler
@@ -378,8 +383,9 @@ paymentProof.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
-    // Validasi file
-    if (file.size > 5000000) { // 5MB
+    console.log('📸 File selected:', file.name, file.size);
+    
+    if (file.size > 5000000) {
         alert('Ukuran file terlalu besar. Maksimal 5MB');
         e.target.value = '';
         return;
@@ -393,48 +399,48 @@ paymentProof.addEventListener('change', (e) => {
     
     paymentProofFile = file;
     
-    // Preview
     const reader = new FileReader();
     reader.onload = (event) => {
         proofPreviewImg.src = event.target.result;
         proofPreview.style.display = 'block';
         confirmPaymentBtn.disabled = false;
         confirmPaymentBtn.style.opacity = '1';
+        confirmPaymentBtn.style.cursor = 'pointer';
+        console.log('✅ Preview loaded');
     };
     reader.readAsDataURL(file);
 });
 
-// Confirm payment button
+// Confirm payment
 confirmPaymentBtn.addEventListener('click', async () => {
     if (!paymentProofFile) {
         alert('Silakan upload bukti pembayaran');
         return;
     }
     
+    console.log('⏳ Uploading proof...');
+    
     confirmPaymentBtn.disabled = true;
-    confirmPaymentBtn.innerHTML = '<span>Mengupload bukti...</span>';
+    confirmPaymentBtn.innerHTML = '<span>Mengupload...</span>';
     
     try {
-        // Option 1: Upload to Cloudinary (Production)
-        // paymentProofUrl = await uploadToCloudinary(paymentProofFile);
-        
-        // Option 2: Convert to base64 (Testing - not recommended for production)
         const base64 = await convertToBase64(paymentProofFile);
         paymentProofUrl = base64;
         
-        // Process order with payment proof
+        console.log('✅ Proof uploaded (base64)');
+        
         const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         await processOrder(total, paymentProofUrl);
         
     } catch (error) {
         console.error('Upload error:', error);
-        alert('Gagal upload bukti pembayaran. Coba lagi.');
+        alert('Gagal upload bukti pembayaran');
         confirmPaymentBtn.disabled = false;
         confirmPaymentBtn.innerHTML = '<span>Konfirmasi Pembayaran</span>';
     }
 });
 
-// Convert file to base64
+// Convert to base64
 function convertToBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -442,28 +448,6 @@ function convertToBase64(file) {
         reader.onerror = reject;
         reader.readAsDataURL(file);
     });
-}
-
-// Upload to Cloudinary (Optional - for production)
-async function uploadToCloudinary(file) {
-    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`;
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', cloudinaryConfig.uploadPreset);
-    formData.append('folder', 'koyun-payment-proofs');
-    
-    const response = await fetch(cloudinaryUrl, {
-        method: 'POST',
-        body: formData
-    });
-    
-    if (!response.ok) {
-        throw new Error('Upload failed');
-    }
-    
-    const data = await response.json();
-    return data.secure_url;
 }
 
 // Process order
@@ -486,18 +470,19 @@ async function processOrder(total, proofUrl) {
         updatedAt: serverTimestamp()
     };
     
+    console.log('📤 Sending order...', orderData);
+    
     try {
         await addDoc(collection(db, 'orders'), orderData);
         
-        // Close modals
+        console.log('✅ Order sent successfully!');
+        
         paymentModal.classList.remove('active');
         cartModal.classList.remove('active');
         document.body.style.overflow = '';
         
-        // Success message
         showSuccessMessage(selectedPaymentMethod);
         
-        // Reset
         cart = [];
         paymentProofFile = null;
         paymentProofUrl = '';
@@ -509,39 +494,39 @@ async function processOrder(total, proofUrl) {
         updateCart();
         
     } catch (error) {
-        console.error('Error:', error);
-        alert('Gagal mengirim pesanan. Silakan coba lagi.');
+        console.error('❌ Error sending order:', error);
+        alert('Gagal mengirim pesanan. Coba lagi.');
         confirmPaymentBtn.disabled = false;
         confirmPaymentBtn.innerHTML = '<span>Konfirmasi Pembayaran</span>';
     }
 }
 
-// Show success message
+// Success message
 function showSuccessMessage(method) {
     const messages = {
-        'qris': 'Pembayaran QRIS telah diterima! Pesanan Anda sedang diproses.',
-        'transfer': 'Bukti transfer telah diterima! Pesanan Anda sedang diverifikasi.',
-        'cash': 'Pesanan berhasil! Silakan siapkan uang tunai untuk pembayaran.'
+        'qris': 'Pembayaran QRIS diterima! Pesanan sedang diproses.',
+        'transfer': 'Bukti transfer diterima! Pesanan sedang diverifikasi.',
+        'cash': 'Pesanan berhasil! Siapkan uang tunai untuk pembayaran.'
     };
     
-    const successModal = document.createElement('div');
-    successModal.className = 'modal active';
-    successModal.innerHTML = `
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.innerHTML = `
         <div class="modal-content" style="max-width:400px; text-align:center; padding:40px 24px;">
             <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" style="margin-bottom:20px;">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
             </svg>
-            <h2 style="color:var(--success); margin-bottom:12px; font-family:'Playfair Display', serif;">Pesanan Berhasil!</h2>
+            <h2 style="color:var(--success); margin-bottom:12px;">Pesanan Berhasil!</h2>
             <p style="color:var(--text-medium); margin-bottom:24px; line-height:1.6;">
                 ${messages[method]}
             </p>
             <button onclick="this.closest('.modal').remove(); location.reload();" class="btn-primary btn-large">
-                <span>OK</span>
+                OK
             </button>
         </div>
     `;
-    document.body.appendChild(successModal);
+    document.body.appendChild(modal);
 }
 
 // Close payment modal
@@ -556,3 +541,5 @@ paymentModal.addEventListener('click', (e) => {
         cartModal.classList.add('active');
     }
 });
+
+console.log('✅ All event listeners attached');
