@@ -4,165 +4,212 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#6F4E37">
-    <meta name="description" content="KoYun Coffee - Premium Coffee & Snacks">
-    <title>KoYun Menu</title>
+    <meta name="description" content="KoYun Coffee - Order your favorite coffee & snacks">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>KoYun Coffee - Order Now</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Landing Page (untuk akses tanpa QR Code) -->
-    <div id="landingPage" class="landing-page" style="min-height: 100vh; display: none; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%); padding: 20px; text-align: center;">
-        <div class="landing-content" style="background: var(--white); padding: 48px 32px; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-xl); max-width: 500px; animation: slideUp 0.5s ease-out;">
-            <div class="qr-icon" style="width: 120px; height: 120px; margin: 0 auto 24px; background: var(--bg-cream); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2">
-                    <rect x="3" y="3" width="7" height="7"></rect>
-                    <rect x="14" y="3" width="7" height="7"></rect>
-                    <rect x="3" y="14" width="7" height="7"></rect>
-                    <rect x="14" y="14" width="7" height="7"></rect>
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-content">
+            <div class="coffee-cup-animation">
+                <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                    <line x1="6" y1="1" x2="6" y2="4"></line>
+                    <line x1="10" y1="1" x2="10" y2="4"></line>
+                    <line x1="14" y1="1" x2="14" y2="4"></line>
                 </svg>
+                <div class="steam-animation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
             </div>
-            <h1 style="font-family:'Playfair Display', serif; font-size:2.5rem; color:var(--primary-color); margin-bottom:16px;">
-                KoYun Coffee
-            </h1>
-            <h2 style="font-size:1.2rem; margin-bottom:24px; color:var(--text-dark);">
-                Selamat Datang!
-            </h2>
-            <p style="font-size:1rem; color:var(--text-medium); line-height:1.8; margin-bottom:32px;">
-                Untuk melihat menu dan memesan,<br>
-                silakan <strong>scan QR Code</strong> yang ada di meja Anda
-            </p>
-            <div style="background:var(--bg-cream); padding:20px; border-radius:12px;">
-                <p style="font-size:0.9rem; color:var(--text-light); margin:0;">
-                    💡 <strong>Tip:</strong> Arahkan kamera ke QR Code di meja untuk akses menu
-                </p>
+            <h1 class="splash-title">KoYun Coffee</h1>
+            <p class="splash-subtitle">Brewing your experience...</p>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Landing Page (No QR Access) -->
+    <div id="landingPage" class="landing-page" style="display: none;">
+        <div class="landing-hero">
+            <div class="hero-background"></div>
+            <div class="hero-content">
+                <div class="logo-large">
+                    <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                        <line x1="6" y1="1" x2="6" y2="4"></line>
+                        <line x1="10" y1="1" x2="10" y2="4"></line>
+                        <line x1="14" y1="1" x2="14" y2="4"></line>
+                    </svg>
+                </div>
+                <h1 class="hero-title">KoYun Coffee</h1>
+                <p class="hero-subtitle">Premium Coffee & Delicious Snacks</p>
+                
+                <div class="qr-instruction">
+                    <div class="qr-badge">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                            <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                            <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                            <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                        </svg>
+                    </div>
+                    <h2>Scan QR Code</h2>
+                    <p>Untuk melihat menu & memesan,<br>silakan scan <strong>QR Code</strong> di meja Anda</p>
+                </div>
+
+                <div class="features-preview">
+                    <div class="feature-item">
+                        <span class="feature-icon">☕</span>
+                        <span>Premium Coffee</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🍰</span>
+                        <span>Fresh Snacks</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">⚡</span>
+                        <span>Quick Service</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Phone Input Modal -->
     <div id="phoneModal" class="modal">
-        <div class="modal-content" style="max-width: 420px;">
-            <div class="modal-header" style="border-bottom: none; flex-direction: column; text-align: center; padding-bottom: 0;">
-                <div class="brand-logo">
-                    <div class="coffee-icon-small">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-                            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-                            <line x1="6" y1="1" x2="6" y2="4"></line>
-                            <line x1="10" y1="1" x2="10" y2="4"></line>
-                            <line x1="14" y1="1" x2="14" y2="4"></line>
-                        </svg>
-                    </div>
-                    <h1 style="font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--primary-color); margin: 12px 0 4px;">KoYun</h1>
+        <div class="modal-backdrop"></div>
+        <div class="modal-content modal-centered">
+            <div class="welcome-header">
+                <div class="welcome-icon">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                        <line x1="6" y1="1" x2="6" y2="4"></line>
+                        <line x1="10" y1="1" x2="10" y2="4"></line>
+                        <line x1="14" y1="1" x2="14" y2="4"></line>
+                    </svg>
                 </div>
-                <h2 style="font-size: 1.2rem; margin: 16px 0 8px;">Selamat Datang!</h2>
-                <div class="table-badge-large" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: white; padding: 12px 24px; border-radius: 24px; font-weight: 700; font-size: 1.1rem; margin-top: 12px;">
-                    Meja <span id="tableDisplay"></span>
+                <h1>Welcome to KoYun!</h1>
+                <div class="table-display-large">
+                    <span>Table</span>
+                    <strong id="tableDisplay"></strong>
                 </div>
             </div>
-            <form id="phoneForm" style="padding: 24px;">
+            
+            <form id="phoneForm" class="phone-form">
                 <div class="form-group">
-                    <label style="font-weight: 600; margin-bottom: 10px; display: block;">Nomor WhatsApp Anda</label>
-                    <div class="input-wrapper">
+                    <label class="form-label">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                         </svg>
-                        <input type="tel" id="phoneInput" class="input-styled" placeholder="08xxxxxxxxxx" required autocomplete="tel" autofocus>
-                    </div>
-                    <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 10px; line-height: 1.4;">
-                        📱 Untuk konfirmasi pesanan dan notifikasi status
-                    </p>
+                        WhatsApp Number
+                    </label>
+                    <input type="tel" id="phoneInput" class="form-input" placeholder="08xxxxxxxxxx" required pattern="08\d{8,11}" autocomplete="tel">
+                    <small class="form-hint">For order confirmation & updates</small>
                 </div>
-                <button type="submit" class="btn-primary btn-large">
-                    <span>Lihat Menu</span>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <span>Continue to Menu</span>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="9 18 15 12 9 6"></polyline>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
                     </svg>
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Main Menu Container -->
-    <div class="menu-container" id="menuContainer" style="display: none;">
-        <header class="menu-header">
-            <div class="menu-header-content">
-                <div class="header-brand">
-                    <h1>KoYun</h1>
-                    <p class="header-tagline">Premium Coffee</p>
+    <!-- Main App -->
+    <div id="appContainer" class="app-container" style="display: none;">
+        <!-- App Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="brand">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                        </svg>
+                        <div>
+                            <h1>KoYun</h1>
+                            <span class="tagline">Premium Coffee</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="header-info">
+                <div class="header-right">
                     <div id="tableInfo" class="table-badge"></div>
                 </div>
             </div>
         </header>
 
-        <div class="menu-categories" id="categories">
-            <!-- Categories will be rendered here by JavaScript -->
-        </div>
-
-        <div class="menu-content">
-            <div class="menu-grid" id="menuGrid">
-                <div class="skeleton-loader"></div>
-                <div class="skeleton-loader"></div>
-                <div class="skeleton-loader"></div>
+        <!-- Category Filter -->
+        <div class="category-filter">
+            <div class="category-scroll" id="categoryContainer">
+                <!-- Rendered by JS -->
             </div>
         </div>
 
-        <div class="cart-float" id="cartFloat" style="display:none;">
-            <button id="viewCartBtn" class="btn-cart">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="9" cy="21" r="1"></circle>
-                    <circle cx="20" cy="21" r="1"></circle>
-                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                </svg>
-                <span id="cartCount" class="cart-badge">0</span>
+        <!-- Menu Grid -->
+        <main class="main-content">
+            <div class="menu-section">
+                <div class="section-header">
+                    <h2 id="sectionTitle">Our Menu</h2>
+                    <span id="productCount" class="product-count"></span>
+                </div>
+                <div class="menu-grid" id="menuGrid">
+                    <!-- Loading skeletons -->
+                    <div class="product-skeleton"></div>
+                    <div class="product-skeleton"></div>
+                    <div class="product-skeleton"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Cart Floating Button -->
+        <div id="cartFloat" class="cart-float" style="display: none;">
+            <button class="cart-button" id="viewCartBtn">
+                <div class="cart-icon-wrapper">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span id="cartBadge" class="cart-badge">0</span>
+                </div>
+                <div class="cart-info">
+                    <span class="cart-items-text"><span id="cartCount">0</span> items</span>
+                    <span class="cart-total" id="cartFloatTotal">Rp 0</span>
+                </div>
             </button>
         </div>
     </div>
 
     <!-- Cart Modal -->
     <div id="cartModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content modal-full">
             <div class="modal-header">
-                <h2>Keranjang Pesanan</h2>
-                <button class="close-modal" id="closeCartModal">
+                <h2>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                     </svg>
-                </button>
-            </div>
-            <div id="cartItems" class="cart-items-container">
-                <!-- Cart items will be rendered here -->
-            </div>
-            <div class="cart-summary">
-                <div class="total-row">
-                    <span>Total</span>
-                    <span id="totalPrice" class="total-price">Rp 0</span>
-                </div>
-                <div class="payment-method">
-                    <label>Metode Pembayaran</label>
-                    <select id="paymentMethod" class="select-styled">
-                        <option value="cash">💵 Tunai (Bayar di Tempat)</option>
-                        <option value="qris">📱 QRIS (Bayar Sekarang)</option>
-                        <option value="transfer">🏦 Transfer Bank (Bayar Sekarang)</option>
-                    </select>
-                </div>
-                <button id="checkoutBtn" class="btn-primary btn-large">
-                    <span>Pesan Sekarang</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Payment Confirmation Modal -->
-    <div id="paymentModal" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <div class="modal-header">
-                <h2>Konfirmasi Pembayaran</h2>
-                <button class="close-modal" id="closePaymentModal">
+                    Your Order
+                </h2>
+                <button class="btn-close" id="closeCartModal">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -170,67 +217,139 @@
                 </button>
             </div>
             
-            <div style="padding: 24px;">
-                <!-- Payment Info -->
-                <div id="paymentInfo" style="background: var(--bg-cream); padding: 24px; border-radius: 12px; margin-bottom: 24px; border-left: 4px solid var(--primary-color);">
-                    <h3 style="margin-bottom: 16px; color: var(--primary-color); font-size: 1.1rem; font-family: 'Playfair Display', serif;">Informasi Pembayaran</h3>
-                    
-                    <!-- QRIS Info -->
-                    <div id="qrisInfo" style="display: none;">
-                        <p style="margin-bottom: 12px; font-weight: 600;">Scan QRIS berikut untuk pembayaran:</p>
-                        <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; margin-bottom: 12px;">
-                            <img src="https://via.placeholder.com/250x250/6F4E37/FFFFFF?text=QRIS+KoYun" alt="QRIS" style="max-width: 250px; border-radius: 8px; border: 2px solid var(--bg-light);">
-                        </div>
-                        <p style="font-size: 0.9rem; color: var(--text-medium); line-height: 1.5;">
-                            💡 Screenshot QRIS di atas atau scan langsung dari layar kasir
-                        </p>
+            <div class="modal-body">
+                <div id="cartItems" class="cart-list">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div class="payment-selector">
+                    <label>Payment Method</label>
+                    <select id="paymentMethod" class="payment-select">
+                        <option value="cash">💵 Cash (Pay at Counter)</option>
+                        <option value="qris">📱 QRIS (Pay Now)</option>
+                        <option value="transfer">🏦 Bank Transfer (Pay Now)</option>
+                    </select>
+                </div>
+                
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="subtotal">Rp 0</span>
                     </div>
-                    
-                    <!-- Transfer Info -->
-                    <div id="transferInfo" style="display: none;">
-                        <p style="margin-bottom: 12px; font-weight: 600;">Transfer ke rekening berikut:</p>
-                        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 12px;">
-                            <p style="margin: 8px 0;"><strong>Bank:</strong> BCA</p>
-                            <p style="margin: 8px 0;">
-                                <strong>No. Rekening:</strong> 
-                                <span style="font-size: 1.2rem; color: var(--primary-color); font-weight: 700;">1234567890</span>
-                            </p>
-                            <p style="margin: 8px 0;"><strong>Atas Nama:</strong> KoYun Coffee</p>
-                            <div style="margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--bg-light);">
-                                <p style="margin: 8px 0; font-size: 0.9rem; color: var(--text-light);">Total Pembayaran:</p>
-                                <p style="margin: 8px 0; font-size: 1.5rem; color: var(--primary-color); font-weight: 700; font-family: 'Playfair Display', serif;" id="totalPayment">Rp 0</p>
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <strong id="totalPrice">Rp 0</strong>
+                    </div>
+                </div>
+
+                <button id="checkoutBtn" class="btn btn-primary btn-block btn-large">
+                    <span>Place Order</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content modal-centered">
+            <div class="modal-header">
+                <h2>Payment Confirmation</h2>
+                <button class="btn-close" id="closePaymentModal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- QRIS Section -->
+                <div id="qrisSection" class="payment-section" style="display: none;">
+                    <div class="payment-info">
+                        <h3>Scan QRIS Code</h3>
+                        <div class="qris-container">
+                            <img src="https://via.placeholder.com/300x300/6F4E37/FFFFFF?text=QRIS+KoYun" alt="QRIS Code" class="qris-image">
+                            <p class="qris-hint">📱 Scan with any e-wallet app</p>
+                        </div>
+                        <div class="payment-amount">
+                            <span>Amount to Pay</span>
+                            <strong id="qrisAmount">Rp 0</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transfer Section -->
+                <div id="transferSection" class="payment-section" style="display: none;">
+                    <div class="payment-info">
+                        <h3>Bank Transfer Details</h3>
+                        <div class="bank-details">
+                            <div class="bank-item">
+                                <label>Bank Name</label>
+                                <div class="bank-value">BCA</div>
+                            </div>
+                            <div class="bank-item">
+                                <label>Account Number</label>
+                                <div class="bank-value copyable" onclick="copyToClipboard('1234567890')">
+                                    <strong>1234567890</strong>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="bank-item">
+                                <label>Account Holder</label>
+                                <div class="bank-value">KoYun Coffee</div>
+                            </div>
+                            <div class="bank-item total-payment">
+                                <label>Total Payment</label>
+                                <div class="bank-value"><strong id="transferAmount">Rp 0</strong></div>
                             </div>
                         </div>
-                        <p style="font-size: 0.9rem; color: var(--text-medium); line-height: 1.5;">
-                            💡 Transfer sesuai nominal total pembayaran
-                        </p>
                     </div>
                 </div>
-                
-                <!-- Upload Bukti -->
-                <div style="margin-bottom: 24px;">
-                    <label style="display: block; margin-bottom: 10px; font-weight: 700; font-size: 1rem;">
-                        Upload Bukti Pembayaran <span style="color: var(--danger);">*</span>
+
+                <!-- Upload Proof -->
+                <div class="upload-section">
+                    <label class="upload-label">
+                        Upload Payment Proof <span class="required">*</span>
                     </label>
-                    <input type="file" id="paymentProof" accept="image/*" capture="environment" style="width: 100%; padding: 12px; border: 2px dashed var(--primary-color); border-radius: 8px; cursor: pointer; background: var(--white); font-family: 'Poppins', sans-serif;">
-                    <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 8px; line-height: 1.4;">
-                        📸 Foto/screenshot bukti transfer atau pembayaran QRIS
-                    </p>
-                    
-                    <!-- Preview -->
-                    <div id="proofPreview" style="margin-top: 16px; display: none; border: 2px solid var(--bg-light); padding: 12px; border-radius: 12px;">
-                        <p style="font-size: 0.9rem; color: var(--text-medium); margin-bottom: 8px; font-weight: 600;">Preview:</p>
-                        <img id="proofPreviewImg" style="max-width: 100%; border-radius: 8px; box-shadow: var(--shadow); display: block; margin: 0 auto;">
+                    <div class="upload-area" id="uploadArea">
+                        <input type="file" id="paymentProof" accept="image/*" capture="environment" hidden>
+                        <label for="paymentProof" class="upload-trigger">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            <span>Click to upload or drag & drop</span>
+                            <small>JPG, PNG up to 5MB</small>
+                        </label>
+                    </div>
+                    <div id="proofPreview" class="proof-preview" style="display: none;">
+                        <img id="proofPreviewImg" alt="Payment Proof">
+                        <button type="button" class="btn-remove-image" onclick="removeProof()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            Remove
+                        </button>
                     </div>
                 </div>
-                
-                <button id="confirmPaymentBtn" class="btn-primary btn-large" disabled style="opacity: 0.5; cursor: not-allowed;">
-                    <span>Konfirmasi Pembayaran</span>
+            </div>
+
+            <div class="modal-footer">
+                <button id="confirmPaymentBtn" class="btn btn-primary btn-block btn-large" disabled>
+                    <span>Confirm Payment</span>
                 </button>
-                
-                <p style="font-size: 0.85rem; color: var(--text-light); text-align: center; margin-top: 16px; line-height: 1.5;">
-                    ⚠️ Pastikan bukti pembayaran jelas dan sesuai total pembayaran
-                </p>
+                <small class="payment-note">⚠️ Make sure your proof is clear and matches the total amount</small>
             </div>
         </div>
     </div>
