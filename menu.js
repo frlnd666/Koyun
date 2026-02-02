@@ -1,6 +1,7 @@
 /* ============================================
    KoYun Coffee V2.0 - Customer App Logic
    Modern, Professional & Feature-Rich
+   FIXED: Image Upload & Compression
    ============================================ */
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -88,6 +89,7 @@ let state = {
     currentCategory: 'all',
     selectedPaymentMethod: 'cash',
     paymentProofFile: null,
+    compressedProofBase64: null,
     isLoading: false
 };
 
@@ -96,7 +98,7 @@ let state = {
 // ============================================
 
 async function init() {
-    console.log('🚀 Initializing app...');
+    console.log('🚀 Initializing KoYun Coffee V2.0...');
     
     // Show splash screen for 2.5 seconds
     setTimeout(() => {
@@ -112,14 +114,18 @@ function checkTableAccess() {
     if (!state.tableNumber) {
         // No table parameter - show landing page
         landingPage.style.display = 'flex';
+        console.log('ℹ️ No table number - showing landing page');
         return;
     }
+    
+    console.log('🏷️ Table number:', state.tableNumber);
     
     // Check if phone already saved
     const savedPhone = sessionStorage.getItem(`phone_table_${state.tableNumber}`);
     
     if (savedPhone) {
         state.customerPhone = savedPhone;
+        console.log('📱 Phone retrieved from session:', savedPhone);
         showApp();
     } else {
         showPhoneModal();
@@ -130,6 +136,7 @@ function showPhoneModal() {
     tableDisplay.textContent = state.tableNumber;
     phoneModal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    console.log('📱 Phone modal opened');
 }
 
 function showApp() {
@@ -139,6 +146,7 @@ function showApp() {
     
     tableInfo.textContent = `Table ${state.tableNumber}`;
     
+    console.log('✅ App ready. Loading products...');
     loadProducts();
 }
 
@@ -153,13 +161,14 @@ phoneForm.addEventListener('submit', (e) => {
     const phone = phoneInput.value.trim();
     
     if (!phone.match(/^08\d{8,11}$/)) {
-        showToast('Invalid phone number format', 'error');
+        showToast('Invalid phone number. Use format: 08xxxxxxxxxx', 'error');
         return;
     }
     
     state.customerPhone = phone;
     sessionStorage.setItem(`phone_table_${state.tableNumber}`, phone);
     
+    console.log('✅ Phone saved:', phone);
     showApp();
 });
 
@@ -185,7 +194,11 @@ closePaymentModal.addEventListener('click', () => {
     modal.addEventListener('click', (e) => {
         if (e.target.classList.contains('modal-backdrop')) {
             modal.classList.remove('active');
-            document.body.style.overflow = '';
+            if (modal === paymentModal) {
+                cartModal.classList.add('active');
+            } else {
+                document.body.style.overflow = '';
+            }
         }
     });
 });
@@ -193,7 +206,7 @@ closePaymentModal.addEventListener('click', () => {
 // Payment Method Change
 paymentMethod.addEventListener('change', (e) => {
     state.selectedPaymentMethod = e.target.value;
-    console.log('💳 Payment method:', state.selectedPaymentMethod);
+    console.log('💳 Payment method selected:', state.selectedPaymentMethod);
 });
 
 // Checkout Button
@@ -248,7 +261,10 @@ async function loadProducts() {
         console.error('❌ Error loading products:', error);
         menuGrid.innerHTML = `
             <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
-                <p style="color: var(--danger);">Failed to load menu. Please refresh.</p>
+                <p style="color: var(--danger); font-weight: 600;">Failed to load menu</p>
+                <button onclick="location.reload()" style="margin-top: 16px; padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                    Refresh Page
+                </button>
             </div>
         `;
     }
@@ -483,6 +499,8 @@ async function handleCheckout() {
     
     const total = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
+    console.log('🛒 Checkout initiated. Method:', state.selectedPaymentMethod);
+    
     if (state.selectedPaymentMethod === 'cash') {
         // Direct checkout for cash
         await processOrder(total, null);
@@ -507,50 +525,152 @@ function showPaymentModal(total) {
     
     paymentModal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    
+    console.log('💳 Payment modal opened');
 }
 
-function handleProofUpload(e) {
+// ============================================
+// Image Upload & Compression (FIXED)
+// ============================================
+
+async function handleProofUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
     
-    // Validate file
+    console.log('📸 File selected:', file.name);
+    console.log('📏 Original size:', (file.size / 1024).toFixed(2), 'KB');
+    
+    // Validate file size (max 5MB)
     if (file.size > 5000000) {
-        showToast('File too large. Max 5MB', 'error');
+        showToast('File too large. Maximum 5MB', 'error');
         e.target.value = '';
         return;
     }
     
+    // Validate file type
     if (!file.type.startsWith('image/')) {
-        showToast('File must be an image', 'error');
+        showToast('File must be an image (JPG, PNG)', 'error');
         e.target.value = '';
         return;
     }
     
     state.paymentProofFile = file;
     
-    // Show preview
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        proofPreviewImg.src = event.target.result;
+    // Show loading state
+    confirmPaymentBtn.disabled = true;
+    confirmPaymentBtn.innerHTML = '<span>Processing image...</span>';
+    
+    try {
+        // Compress image
+        console.log('⏳ Compressing image...');
+        const compressedBase64 = await compressImage(file);
+        
+        const compressedSizeKB = (compressedBase64.length / 1024).toFixed(2);
+        console.log('✅ Image compressed to:', compressedSizeKB, 'KB');
+        
+        // Store compressed version
+        state.compressedProofBase64 = compressedBase64;
+        
+        // Show preview
+        proofPreviewImg.src = compressedBase64;
         proofPreview.style.display = 'block';
+        
+        // Enable button
         confirmPaymentBtn.disabled = false;
         confirmPaymentBtn.style.opacity = '1';
         confirmPaymentBtn.style.cursor = 'pointer';
-    };
-    reader.readAsDataURL(file);
+        confirmPaymentBtn.innerHTML = '<span>Confirm Payment</span>';
+        
+        showToast('Image ready to upload', 'success');
+        
+    } catch (error) {
+        console.error('❌ Compression error:', error);
+        showToast('Failed to process image. Please try another photo.', 'error');
+        e.target.value = '';
+        confirmPaymentBtn.disabled = true;
+        confirmPaymentBtn.innerHTML = '<span>Confirm Payment</span>';
+    }
+}
+
+function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+            const img = new Image();
+            
+            img.onload = () => {
+                try {
+                    // Create canvas
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Calculate new dimensions (max 800px)
+                    let width = img.width;
+                    let height = img.height;
+                    const maxSize = 800;
+                    
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height = (height * maxSize) / width;
+                            width = maxSize;
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width = (width * maxSize) / height;
+                            height = maxSize;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // Draw image with white background
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Convert to JPEG with compression
+                    let quality = 0.7;
+                    let compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                    
+                    // If still too large (>400KB), reduce quality further
+                    while (compressedBase64.length > 400000 && quality > 0.3) {
+                        quality -= 0.1;
+                        compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                        console.log('🔄 Reducing quality to:', quality.toFixed(1), '| Size:', (compressedBase64.length / 1024).toFixed(2), 'KB');
+                    }
+                    
+                    resolve(compressedBase64);
+                    
+                } catch (error) {
+                    reject(new Error('Failed to compress image: ' + error.message));
+                }
+            };
+            
+            img.onerror = () => reject(new Error('Failed to load image'));
+            img.src = e.target.result;
+        };
+        
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+    });
 }
 
 window.removeProof = function() {
     state.paymentProofFile = null;
+    state.compressedProofBase64 = null;
     paymentProof.value = '';
     proofPreview.style.display = 'none';
     confirmPaymentBtn.disabled = true;
     confirmPaymentBtn.style.opacity = '0.5';
     confirmPaymentBtn.style.cursor = 'not-allowed';
+    
+    console.log('🗑️ Payment proof removed');
 }
 
 async function handleConfirmPayment() {
-    if (!state.paymentProofFile) {
+    if (!state.compressedProofBase64) {
         showToast('Please upload payment proof', 'error');
         return;
     }
@@ -565,28 +685,23 @@ async function handleConfirmPayment() {
     `;
     
     try {
-        // Convert to base64
-        const base64 = await convertToBase64(state.paymentProofFile);
-        
         const total = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        await processOrder(total, base64);
+        
+        console.log('📤 Submitting order with payment proof...');
+        await processOrder(total, state.compressedProofBase64);
         
     } catch (error) {
-        console.error('❌ Upload error:', error);
-        showToast('Upload failed. Please try again', 'error');
+        console.error('❌ Payment confirmation error:', error);
+        showToast('Upload failed: ' + error.message, 'error');
+        
         confirmPaymentBtn.disabled = false;
         confirmPaymentBtn.innerHTML = '<span>Confirm Payment</span>';
     }
 }
 
-function convertToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
+// ============================================
+// Process Order (IMPROVED ERROR HANDLING)
+// ============================================
 
 async function processOrder(total, proofUrl) {
     const orderData = {
@@ -600,19 +715,25 @@ async function processOrder(total, proofUrl) {
         })),
         total: total,
         paymentMethod: state.selectedPaymentMethod,
-        paymentProof: proofUrl,
+        paymentProof: proofUrl || null,
         paymentStatus: state.selectedPaymentMethod === 'cash' ? 'pending' : 'paid',
         status: 'pending',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
     };
     
-    console.log('📤 Sending order...', orderData);
+    const dataSize = JSON.stringify(orderData).length;
+    console.log('📊 Order data size:', (dataSize / 1024).toFixed(2), 'KB');
+    
+    if (dataSize > 1000000) {
+        throw new Error('Order data too large. Please use a smaller image.');
+    }
     
     try {
-        await addDoc(collection(db, 'orders'), orderData);
+        console.log('📤 Sending order to Firestore...');
+        const docRef = await addDoc(collection(db, 'orders'), orderData);
         
-        console.log('✅ Order sent successfully!');
+        console.log('✅ Order sent successfully! ID:', docRef.id);
         
         // Close modals
         paymentModal.classList.remove('active');
@@ -625,6 +746,7 @@ async function processOrder(total, proofUrl) {
         // Reset state
         state.cart = [];
         state.paymentProofFile = null;
+        state.compressedProofBase64 = null;
         updateCartUI();
         
         // Reset payment modal
@@ -635,10 +757,25 @@ async function processOrder(total, proofUrl) {
         confirmPaymentBtn.innerHTML = '<span>Confirm Payment</span>';
         
     } catch (error) {
-        console.error('❌ Order error:', error);
-        showToast('Failed to place order. Please try again', 'error');
-        confirmPaymentBtn.disabled = false;
-        confirmPaymentBtn.innerHTML = '<span>Confirm Payment</span>';
+        console.error('❌ Firestore error:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        
+        // Specific error messages
+        let errorMsg = 'Failed to place order';
+        
+        if (error.code === 'permission-denied') {
+            errorMsg = 'Permission denied. Please contact support.';
+        } else if (error.code === 'resource-exhausted') {
+            errorMsg = 'Image too large. Please use a smaller photo.';
+        } else if (error.code === 'unavailable') {
+            errorMsg = 'Network error. Please check your connection.';
+        } else if (error.message.includes('maximum')) {
+            errorMsg = 'Order data too large. Try a smaller image.';
+        }
+        
+        showToast(errorMsg, 'error');
+        throw error; // Re-throw for debugging
     }
 }
 
@@ -672,20 +809,6 @@ function showSuccessMessage() {
         </div>
     `;
     document.body.appendChild(modal);
-    
-    // Add scaleIn animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes scaleIn {
-            from { transform: scale(0); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-    `;
-    document.head.appendChild(style);
 }
 
 // ============================================
@@ -693,11 +816,31 @@ function showSuccessMessage() {
 // ============================================
 
 window.copyToClipboard = function(text) {
-    navigator.clipboard.writeText(text).then(() => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('Copied to clipboard!', 'success');
+        }).catch(() => {
+            fallbackCopy(text);
+        });
+    } else {
+        fallbackCopy(text);
+    }
+}
+
+function fallbackCopy(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
         showToast('Copied to clipboard!', 'success');
-    }).catch(() => {
+    } catch (err) {
         showToast('Failed to copy', 'error');
-    });
+    }
+    document.body.removeChild(textArea);
 }
 
 function showToast(message, type = 'info') {
@@ -721,6 +864,7 @@ function showToast(message, type = 'info') {
         z-index: 10000;
         font-weight: 600;
         animation: slideInRight 0.3s ease-out;
+        max-width: 320px;
     `;
     toast.textContent = message;
     document.body.appendChild(toast);
@@ -731,9 +875,12 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-// Add toast animations
-const toastStyle = document.createElement('style');
-toastStyle.textContent = `
+// ============================================
+// Add Animations
+// ============================================
+
+const styleAnimations = document.createElement('style');
+styleAnimations.textContent = `
     @keyframes slideInRight {
         from {
             transform: translateX(400px);
@@ -754,20 +901,29 @@ toastStyle.textContent = `
             opacity: 0;
         }
     }
+    @keyframes scaleIn {
+        from {
+            transform: scale(0);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
 `;
-document.head.appendChild(toastStyle);
+document.head.appendChild(styleAnimations);
 
 // ============================================
-// Start App
-// ============================================
-
-init();
-
-console.log('✅ App initialized');
-
-
-// ============================================
-// Service Worker Registration (Opsional - PWA)
+// Service Worker Registration (Optional)
 // ============================================
 
 if ('serviceWorker' in navigator) {
@@ -781,14 +937,8 @@ if ('serviceWorker' in navigator) {
                     const newWorker = registration.installing;
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            // New version available
-                            console.log('🔄 New version available! Please refresh.');
-                            
-                            // Optional: Show update notification
-                            if (confirm('New version available! Refresh now?')) {
-                                newWorker.postMessage({ type: 'SKIP_WAITING' });
-                                window.location.reload();
-                            }
+                            console.log('🔄 New version available!');
+                            showToast('New version available! Refresh to update.', 'info');
                         }
                     });
                 });
@@ -797,13 +947,12 @@ if ('serviceWorker' in navigator) {
                 console.warn('❌ Service Worker registration failed:', error);
             });
     });
-    
-    // Handle service worker updates
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-            refreshing = true;
-            window.location.reload();
-        }
-    });
 }
+
+// ============================================
+// Start App
+// ============================================
+
+init();
+
+console.log('✅ KoYun Coffee V2.0 initialized successfully');
